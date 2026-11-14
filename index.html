@@ -13,6 +13,19 @@
 const tenants=[
 ['Adjuvant Home Health LLC','513'],['Apptad Inc','500'],['ARS Moving LLC','212'],['AutoDox LLC','221'],['Awicho Properties','511A'],['Axiom Bridge LLC','215'],['CelPlan Technologies Inc.','400'],['Cloud BC Labs Inc','501'],['CPA Directory','102'],['Crawlspace Guards','232'],['DataCube Technologies','507'],['Everlasting Joy Home Care','515'],['Global Infotek Inc','100'],['Gray Ledger LLC','225'],['KOAH Enterprises','207'],['Magazzino Italiano Fulfillment Ctr','B200'],['MintLife Health','509'],['Moving Sucks Movers LLC','206'],['MSquare Systems Inc','514'],['MyGuyGus/LVrg','505'],['Nectar Info Tek LLC','303'],['New Life Moving','214'],['Onyx Audio Visual','B100'],['Platinum Home Design LLC','101'],['SCI Group','302'],['Seized Luxury Goods LLC','210'],['YTU LLC','235']
 ].map(([name,suite])=>({name,suite}));
+const businessDetails = {
+  '514': {
+    name: 'M-Square Systems Inc.',
+    description: 'M-Square Systems Inc. provides IT consulting, technology solutions, and professional staffing to federal, state, and local government agencies and commercial clients. Services include artificial intelligence, cloud computing and migration, cybersecurity, data analytics, software development, DevOps, IT infrastructure, digital transformation, IT staff augmentation, managed IT services, project management, quality assurance, and technology consulting.',
+    phone: '+1 (212) 941-6000',
+    virginiaPhone: '+1 (212) 941-6000 ext. 102',
+    email: 'muthu.n@msquaresystems.com',
+    website: 'https://www.msquaresystems.com',
+    contactPage: 'https://www.msquaresystems.com/contact',
+    hours: 'Monday–Friday, 9:00 AM–5:00 PM Eastern (subject to confirmation)',
+    visitors: 'Meetings are primarily by appointment. Please contact the company in advance to arrange an in-person or virtual meeting.'
+  }
+};
 const floor=t=>t.suite.startsWith('B')?'Lower Level':t.suite[0];
 const floorLabel=t=>floor(t)==='Lower Level'?'Lower Level':'Floor '+floor(t);
 const access=t=>['2','4','5'].includes(floor(t))?'An access card or four-digit code followed by # is required. If you have neither, please call the tenant you are visiting.':floor(t)==='3'?'Third-floor elevator access is open 8:00 AM–5:00 PM.':floor(t)==='Lower Level'?'Lower-level access is open 10:00 AM–4:00 PM. Contact the tenant for additional access instructions.':'Please contact the tenant for visiting arrangements.';
@@ -20,6 +33,63 @@ const filterOptions=[['all','All'],['1','1st'],['2','2nd'],['3','3rd'],['4','4th
 let activeFloor='all',openSuite=null;
 const search=document.querySelector('#search'),filters=document.querySelector('#filters'),list=document.querySelector('#list'),count=document.querySelector('#count');
 function renderFilters(){filters.replaceChildren();for(const [value,label] of filterOptions){const b=document.createElement('button');b.textContent=label;b.type='button';b.setAttribute('aria-pressed',String(activeFloor===value));b.addEventListener('click',()=>{activeFloor=value;openSuite=null;renderFilters();renderList()});filters.append(b)}}
-function renderList(){const q=search.value.trim().toLowerCase();const matches=tenants.filter(t=>(activeFloor==='all'||floor(t)===activeFloor)&&(t.name+' '+t.suite).toLowerCase().includes(q));count.textContent=`${matches.length} of ${tenants.length} tenants`;list.replaceChildren();if(!matches.length){const p=document.createElement('div');p.className='empty';p.textContent='No matching tenants found.';list.append(p);return}for(const t of matches){const item=document.createElement('div');item.className='tenant';const btn=document.createElement('button');btn.type='button';btn.setAttribute('aria-expanded',String(openSuite===t.suite));const title=document.createElement('span');const name=document.createElement('div');name.className='name';name.textContent=t.name;const sub=document.createElement('div');sub.className='sub';sub.textContent=`${floorLabel(t)} · Suite ${t.suite}`;title.append(name,sub);const arrow=document.createElement('span');arrow.className='chevron';arrow.textContent=openSuite===t.suite?'⌃':'⌄';arrow.setAttribute('aria-hidden','true');btn.append(title,arrow);btn.addEventListener('click',()=>{openSuite=openSuite===t.suite?null:t.suite;renderList()});item.append(btn);if(openSuite===t.suite){const details=document.createElement('div');details.className='details';const loc=document.createElement('p');const strong=document.createElement('strong');strong.textContent=`Suite ${t.suite}`;loc.append(strong);const instructions=document.createElement('p');instructions.textContent=access(t);const note=document.createElement('p');note.style.color='#637489';note.textContent='Additional business details may be added following tenant submission and management approval.';details.append(loc,instructions,note);item.append(details)}list.append(item)}}
+function renderList(){const q=search.value.trim().toLowerCase();const matches=tenants.filter(t=>(activeFloor==='all'||floor(t)===activeFloor)&&(t.name+' '+t.suite).toLowerCase().includes(q));count.textContent=`${matches.length} of ${tenants.length} tenants`;list.replaceChildren();if(!matches.length){const p=document.createElement('div');p.className='empty';p.textContent='No matching tenants found.';list.append(p);return}for(const t of matches){const item=document.createElement('div');item.className='tenant';const btn=document.createElement('button');btn.type='button';btn.setAttribute('aria-expanded',String(openSuite===t.suite));const title=document.createElement('span');const name=document.createElement('div');name.className='name';name.textContent=t.name;const sub=document.createElement('div');sub.className='sub';sub.textContent=`${floorLabel(t)} · Suite ${t.suite}`;title.append(name,sub);const arrow=document.createElement('span');arrow.className='chevron';arrow.textContent=openSuite===t.suite?'⌃':'⌄';arrow.setAttribute('aria-hidden','true');btn.append(title,arrow);btn.addEventListener('click',()=>{openSuite=openSuite===t.suite?null:t.suite;renderList()});item.append(btn);if(openSuite===t.suite){const details=document.createElement('div');details.className='details';const loc=document.createElement('p');const strong=document.createElement('strong');strong.textContent=`Suite ${t.suite}`;loc.append(strong);const instructions=document.createElement('p');instructions.textContent=access(t);
+details.append(loc, instructions);
+
+const profile = businessDetails[t.suite];
+
+if (profile) {
+  const heading = document.createElement('h3');
+  heading.textContent = profile.name;
+  details.append(heading);
+
+  const description = document.createElement('p');
+  description.textContent = profile.description;
+  details.append(description);
+
+  function addField(label, value, href) {
+    const p = document.createElement('p');
+    const strong = document.createElement('strong');
+    strong.textContent = label + ': ';
+    p.append(strong);
+
+    if (href) {
+      const a = document.createElement('a');
+      a.href = href;
+      a.textContent = value;
+      if (href.startsWith('https://')) {
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+      }
+      p.append(a);
+    } else {
+      p.append(document.createTextNode(value));
+    }
+    details.append(p);
+  }
+
+  addField('Phone', profile.phone,
+           'tel:+12129416000');
+  addField('Virginia Office', profile.virginiaPhone,
+           'tel:+12129416000');
+  addField('Email', profile.email,
+           'mailto:' + profile.email);
+  addField('Website', profile.website,
+           profile.website);
+  addField('Contact Page', 'Contact Us',
+           profile.contactPage);
+  addField('Office Hours', profile.hours);
+  addField('Visitors', profile.visitors);
+
+} else {
+  const note = document.createElement('p');
+  note.style.color = '#637489';
+  note.textContent =
+    'Additional business details may be added following tenant submission and management approval.';
+  details.append(note);
+}
+
+item.append(details);
+}list.append(item)}}
 search.addEventListener('input',()=>{openSuite=null;renderList()});renderFilters();renderList();
 </script></body></html>
